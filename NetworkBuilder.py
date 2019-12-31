@@ -42,12 +42,14 @@ class NetworkBuilder:
 			layer_out_i="layer_out_"+str(i)+" = Dense(1, activation='"+actif+"')(layer_"+str(self.NUM_HIDDEN_LAYERS)+")"
 			exec(layer_out_i)
 			layer_out.append("layer_out_"+str(i)+"")
-		outputs = ",".join(layer_out)	
-		exec("model = Model(inputs=layer_0, outputs=["+outputs+"])")
-		print(model.summary())
+		outputs = ",".join(layer_out)
+		outtest = eval(outputs)
+		model = Model(inputs = layer_0,outputs = outtest)
+		#exec("model = Model(inputs=layer_0, outputs=["+outputs+"])")
 		# compile the keras model
 		opt = SGD(lr=self.LR, momentum=self.MOMENTUM, decay=self.DECAY)
 		model.compile(loss=self.LOSS, optimizer=opt, metrics=self.METRICS)
+		print(model.summary())
 		return(model)
 
 	def fitModel(self,X,y,model):
@@ -72,9 +74,9 @@ class NetworkBuilder:
 			        print("exception on %s!" % option)
 			        dict1[option] = None
 			return dict1	
-		self.ROOT_PATH = '/Volumes/HD/Code/python/2019/DeepAdvisors/'
+		self.ROOT_PATH = '/Volumes/HD/Code/python/2019/DeepAdvisors/NeuralNet/'
 		Config = cp.ConfigParser()
-		Config.read(self.ROOT_PATH+"/HO_MLP/mlp/config.ini")
+		Config.read(self.ROOT_PATH+"config.ini")
 		sections = Config.sections()[0]
 		self.X_COLUMNS = list(ConfigSectionMap(sections)['x_columns'].split(','))
 		for i in range(len(self.X_COLUMNS)):
