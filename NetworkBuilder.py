@@ -43,9 +43,7 @@ class NetworkBuilder:
 			exec(layer_out_i)
 			layer_out.append("layer_out_"+str(i)+"")
 		outputs = ",".join(layer_out)
-		outtest = eval(outputs)
-		model = Model(inputs = layer_0,outputs = outtest)
-		#exec("model = Model(inputs=layer_0, outputs=["+outputs+"])")
+		model = eval("Model(inputs=layer_0, outputs=["+outputs+"])")
 		# compile the keras model
 		opt = SGD(lr=self.LR, momentum=self.MOMENTUM, decay=self.DECAY)
 		model.compile(loss=self.LOSS, optimizer=opt, metrics=self.METRICS)
