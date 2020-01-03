@@ -70,7 +70,7 @@ class NetworkBuilder:
 		return(model)
 
 	def fitModel(self,X,y,model):
-		checkpoint = ModelCheckpoint(self.ROOT_PATH, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
+		checkpoint = ModelCheckpoint(self.ROOT_PATH+"/"+self.ID, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
 		callbacks_list = [checkpoint]
 		model.fit(X, y, epochs=self.EPOCHS, batch_size=self.BATCH_SIZE,callbacks=callbacks_list)
 		
@@ -116,4 +116,4 @@ class NetworkBuilder:
 		self.DECAY = float(ConfigSectionMap("NetworkParameters")['decay'])
 		self.REGTYPE = ConfigSectionMap("NetworkParameters")['regularization_type']
 		self.REGVAL = float(ConfigSectionMap("NetworkParameters")['regularization_val'])
-
+		self.ID = ConfigSectionMap("NetworkParameters")['unique_model_id']
