@@ -2,6 +2,8 @@ from numpy import loadtxt
 from keras.layers import Input, Dense
 from keras.models import Model, Sequential
 from keras.optimizers import SGD
+from keras.regularizers import l1
+from keras.regularizers import l2
 import numpy as np
 import os as os
 import configparser as cp
@@ -24,9 +26,14 @@ class NetworkBuilder:
 
 	def generateModel(self):
 		layer_0 = Input(shape=(len(self.X_COLUMNS),))
+		ltype = self.REGTYPE
+		if self.REGTYPE == "none":
+			ACREG=""
+		if self.REGTYPE != "none":	
+			ACREG = "activity_regularizer="+ltype+"("+self.REGVAL+")"
 		for i in range(self.NUM_HIDDEN_LAYERS):
 			i = i+1
-			layer_i="layer_"+str(i)+" = Dense("+str(self.HL_UNITS)+", activation='relu')(layer_"+(str(i-1))+")"
+			layer_i="layer_"+str(i)+" = Dense("+str(self.HL_UNITS)+", activation='relu',"+ACREG+",)(layer_"+(str(i-1))+")"
 			exec(layer_i)	
 		layer_out = []
 		layer_out.clear()
@@ -105,5 +112,5 @@ class NetworkBuilder:
 		self.MOMENTUM = float(ConfigSectionMap("NetworkParameters")['momentum'])
 		self.DECAY = float(ConfigSectionMap("NetworkParameters")['decay'])
 		self.REGTYPE = ConfigSectionMap("NetworkParameters")['regularization_type']
-		self.REGVAL = ConfigSectionMap("NetworkParameters")['regularization_val']
+		self.REGVAL = float(ConfigSectionMap("NetworkParameters")['regularization_val'])
 
