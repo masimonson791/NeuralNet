@@ -8,10 +8,6 @@ import configparser as cp
 
 # split into input (X) and output (y) variables
 
-# define model parameters:
-#MODEL_TYPE = "Regression" # "Regression", "Binary Classification", "Multi-Class Classification"
-
-
 class NetworkBuilder:
 
 	def loadData(self):		
@@ -36,9 +32,25 @@ class NetworkBuilder:
 		layer_out.clear()
 		for i in range(len(self.LOSS)):
 			if self.LOSS[i]=='mean_squared_error':
-				actif = 'relu'
+				actif = 'linear'
 			if self.LOSS[i]=='categorical_crossentropy':
 				actif = 'softmax'
+			if self.LOSS[i]=='mean_squared_logarithmic_error':
+				actif = 'linear'
+			if self.LOSS[i]=='mean_absolute_error':
+				actif = 'linear'
+			if self.LOSS[i]=='mean_squared_logarithmic_error':
+				actif = 'linear'
+			if self.LOSS[i]=='binary_crossentropy':
+				actif = 'sigmoid'
+			if self.LOSS[i]=='hinge':
+				actif = 'tanh'
+			if self.LOSS[i]=='squared_hinge':
+				actif = 'tanh'
+			if self.LOSS[i]=='sparse_categorical_crossentropy':
+				actif = 'softmax'
+			if self.LOSS[i]=='kullback_libler_divergence':
+				actif = 'softmax'							
 			layer_out_i="layer_out_"+str(i)+" = Dense(1, activation='"+actif+"')(layer_"+str(self.NUM_HIDDEN_LAYERS)+")"
 			exec(layer_out_i)
 			layer_out.append("layer_out_"+str(i)+"")
