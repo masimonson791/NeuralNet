@@ -104,3 +104,6 @@ class NetworkBuilder:
 		self.LR = float(ConfigSectionMap("NetworkParameters")['lr'])
 		self.MOMENTUM = float(ConfigSectionMap("NetworkParameters")['momentum'])
 		self.DECAY = float(ConfigSectionMap("NetworkParameters")['decay'])
+		self.REGTYPE = ConfigSectionMap("NetworkParameters")['regularization_type']
+		self.REGVAL = ConfigSectionMap("NetworkParameters")['regularization_val']
+
