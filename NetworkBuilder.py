@@ -72,8 +72,12 @@ class NetworkBuilder:
 		print(model.summary())
 		return(model)
 
+	def loadWeights(self,model,fileName):
+		model.load_weights(fileName)
+		return(model)
+
 	def fitModel(self,X,y,model):
-		checkpoint = ModelCheckpoint(self.ROOT_PATH+"/"+self.ID, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
+		checkpoint = ModelCheckpoint(self.ID+".hdf5", verbose=1, save_best_only=False, mode='max')
 		callbacks_list = [checkpoint]
 		model.fit(X, y, epochs=self.EPOCHS, batch_size=self.BATCH_SIZE,callbacks=callbacks_list)
 		
