@@ -6,9 +6,11 @@ from keras.regularizers import l1
 from keras.regularizers import l2
 from keras import layers
 from keras.callbacks import ModelCheckpoint
+from keras.callbacks import TensorBoard
 import numpy as np
 import os as os
 import configparser as cp
+import time as time
 
 # split into input (X) and output (y) variables
 
@@ -77,10 +79,13 @@ class NetworkBuilder:
 		return(model)
 
 	def fitModel(self,X,y,model):
+		os.system("rm -r my_log_dir")
+		os.mkdir("my_log_dir")
+		tensorboard = TensorBoard(log_dir="my_log_dir")
 		checkpoint = ModelCheckpoint(self.ID+".hdf5", verbose=1, save_best_only=False, mode='max')
-		callbacks_list = [checkpoint]
-		model.fit(X, y, epochs=self.EPOCHS, batch_size=self.BATCH_SIZE,callbacks=callbacks_list)
-		
+		callbacks_list = [checkpoint,tensorboard]
+		history = model.fit(X, y, epochs=self.EPOCHS, batch_size=self.BATCH_SIZE,callbacks=callbacks_list)
+		print("enter in terminal to use TensorBoard 2.0.2 at http://localhost:6008/ : 'tensorboard --logdir=my_log_dir'")
 		return(model)
 
 	def makePredictions(self,model,X):
