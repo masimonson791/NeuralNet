@@ -26,7 +26,7 @@ class NetworkBuilder:
 			y[:,i] = min_max(y[:,i])
 		return X, y
 
-	def generateModel(self):
+	def generateMLP(self):
 		layer_0 = Input(shape=(len(self.X_COLUMNS),))
 		ltype = self.REGTYPE
 		if self.REGTYPE == "none":
