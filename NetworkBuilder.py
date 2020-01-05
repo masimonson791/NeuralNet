@@ -4,6 +4,7 @@ from keras.models import Model, Sequential
 from keras.optimizers import SGD
 from keras.regularizers import l1
 from keras.regularizers import l2
+from keras import layers
 import numpy as np
 import os as os
 import configparser as cp
@@ -32,8 +33,9 @@ class NetworkBuilder:
 		if self.REGTYPE != "none":	
 			ACREG = "activity_regularizer="+ltype+"("+self.REGVAL+")"
 		for i in range(self.NUM_HIDDEN_LAYERS):
+			i = i*2
 			i = i+1
-			layer_i="layer_"+str(i)+" = Dense("+str(self.HL_UNITS)+", activation='relu',"+ACREG+",)(layer_"+(str(i-1))+")"
+			layer_i="layer_"+str(i)+" = Dense("+str(self.HL_UNITS)+", activation='relu',"+ACREG+",)(layer_"+(str(i-1))+")\nlayer_"+str(i+1)+" = layers.Dropout("+self.DROPVAL+")(layer_"+(str(i))+")"
 			exec(layer_i)	
 		layer_out = []
 		layer_out.clear()
@@ -58,7 +60,7 @@ class NetworkBuilder:
 				actif = 'softmax'
 			if self.LOSS[i]=='kullback_libler_divergence':
 				actif = 'softmax'							
-			layer_out_i="layer_out_"+str(i)+" = Dense(1, activation='"+actif+"')(layer_"+str(self.NUM_HIDDEN_LAYERS)+")"
+			layer_out_i="layer_out_"+str(i)+" = Dense(1, activation='"+actif+"')(layer_"+str(self.NUM_HIDDEN_LAYERS*2)+")"
 			exec(layer_out_i)
 			layer_out.append("layer_out_"+str(i)+"")
 		outputs = ",".join(layer_out)
@@ -115,5 +117,6 @@ class NetworkBuilder:
 		self.MOMENTUM = float(ConfigSectionMap("NetworkParameters")['momentum'])
 		self.DECAY = float(ConfigSectionMap("NetworkParameters")['decay'])
 		self.REGTYPE = ConfigSectionMap("NetworkParameters")['regularization_type']
-		self.REGVAL = float(ConfigSectionMap("NetworkParameters")['regularization_val'])
+		self.REGVAL = ConfigSectionMap("NetworkParameters")['regularization_val']
 		self.ID = ConfigSectionMap("NetworkParameters")['unique_model_id']
+		self.DROPVAL = ConfigSectionMap("NetworkParameters")['dropout_val']
