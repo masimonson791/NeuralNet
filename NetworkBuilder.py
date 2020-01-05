@@ -5,6 +5,7 @@ from keras.optimizers import SGD
 from keras.regularizers import l1
 from keras.regularizers import l2
 from keras import layers
+from keras.callbacks import ModelCheckpoint
 import numpy as np
 import os as os
 import configparser as cp
