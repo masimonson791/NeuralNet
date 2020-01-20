@@ -18,6 +18,10 @@ model.summary()
 
 yhat = net.makePredictions(model, X)
 
+lmtm_model = net.generateLSTM()
 
+lstm_fit_model = net.fitModel(X,[y0,y1],lstm_model)
 
+lstm_model = net.loadWeights(lstm_model, "0001.hdf5")
 
+lstm_yhat = net.makePredictions(lstm_model, X)
