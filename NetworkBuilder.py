@@ -12,6 +12,15 @@ from keras.layers import Flatten
 from keras.layers.convolutional import Conv1D
 from keras.layers.convolutional import MaxPooling1D
 import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import norm
+from keras.layers import Input, Dense, Lambda, Flatten, Reshape
+from keras.layers import Conv1D,UpSampling1D
+from keras.models import Model
+from keras import backend as K
+from keras import metrics
+from keras.datasets import mnist
+import numpy as np
 import os as os
 import configparser as cp
 import time as time
@@ -204,62 +213,65 @@ class NetworkBuilder:
 
 # code variational auto-encoder:
 
-# x = Input(batch_shape=(batch_size, original_dim))
-# h = Dense(intermediate_dim, activation='relu')(x)
-# z_mean = Dense(latent_dim)(h)
-# z_log_sigma = Dense(latent_dim)(h)
+# Input sequence dimensions
+steps, original_dim = 1, 28*28 # Take care here since we are changing this according to the data
+# Number of convolutional filters to use
+filters = 64
+# Convolution kernel size
+num_conv = 6
+# Set batch size
+batch_size = 100
+# Decoder output dimensionality
+decOutput = 10
 
-# def sampling(args):
-#     z_mean, z_log_sigma = args
-#     epsilon = K.random_normal(shape=(batch_size, latent_dim),
-#                               mean=0., std=epsilon_std)
-#     return z_mean + K.exp(z_log_sigma) * epsilon
+latent_dim = 20
+intermediate_dim = 256
+epsilon_std = 1.0
+epochs = 5
 
-# # note that "output_shape" isn't necessary with the TensorFlow backend
-# # so you could write `Lambda(sampling)([z_mean, z_log_sigma])`
-# z = Lambda(sampling, output_shape=(latent_dim,))([z_mean, z_log_sigma])
+x = Input(batch_shape=(batch_size,steps,original_dim))
+# Play around with padding here, not sure what to go with.
+conv_1 = Conv1D(1,
+                kernel_size=num_conv,
+                padding='same', 
+                activation='relu')(x)
+conv_2 = Conv1D(filters,
+                kernel_size=num_conv,
+                padding='same', 
+                activation='relu',
+                strides=1)(conv_1)
+flat = Flatten()(conv_2) # Since we are passing flat data anyway, we probably don't need this.
+hidden = Dense(intermediate_dim, activation='relu')(flat)
+z_mean = Dense(latent_dim)(hidden)
+z_log_var = Dense(latent_dim)(hidden)
 
-# decoder_h = Dense(intermediate_dim, activation='relu')
-# decoder_mean = Dense(original_dim, activation='sigmoid')
-# h_decoded = decoder_h(z)
-# x_decoded_mean = decoder_mean(h_decoded)
+def sampling(args):
+    z_mean, z_log_var = args
+    epsilon = K.random_normal(shape=(batch_size, latent_dim),
+                              mean=0., stddev=epsilon_std)
+    return z_mean + K.exp(z_log_var ) * epsilon # the original VAE divides z_log_var with two -- why?
 
-# vae = Model(x, x_decoded_mean)
+# note that "output_shape" isn't necessary with the TensorFlow backend
+# so you could write `Lambda(sampling)([z_mean, z_log_var])`
+z = Lambda(sampling, output_shape=(latent_dim,))([z_mean, z_log_var])
 
-# # encoder, from inputs to latent space
-# encoder = Model(x, z_mean)
 
-# # generator, from latent space to reconstructed inputs
-# decoder_input = Input(shape=(latent_dim,))
-# _h_decoded = decoder_h(decoder_input)
-# _x_decoded_mean = decoder_mean(_h_decoded)
-# generator = Model(decoder_input, _x_decoded_mean)
 
-# def vae_loss(x, x_decoded_mean):
-#     xent_loss = objectives.binary_crossentropy(x, x_decoded_mean)
-#     kl_loss = - 0.5 * K.mean(1 + z_log_sigma - K.square(z_mean) - K.exp(z_log_sigma), axis=-1)
-#     return xent_loss + kl_loss
+# we instantiate these layers separately so as to reuse them later
+decoder_h = Dense(intermediate_dim, activation='relu')
+decoder_mean = Dense(original_dim, activation='sigmoid')
 
-# vae.compile(optimizer='rmsprop', loss=vae_loss)
+h_decoded = decoder_h(z)
+x_decoded_mean = decoder_mean(h_decoded)
 
-# (x_train, y_train), (x_test, y_test) = mnist.load_data()
+def vae_loss(x, x_decoded_mean):
+    xent_loss = original_dim * metrics.binary_crossentropy(x, x_decoded_mean)
+    kl_loss = - 0.5 * K.sum(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1) # Double check wtf this is supposed to be
+    return xent_loss + kl_loss
 
-# x_train = x_train.astype('float32') / 255.
-# x_test = x_test.astype('float32') / 255.
-# x_train = x_train.reshape((len(x_train), np.prod(x_train.shape[1:])))
-# x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
-
-# vae.fit(x_train, x_train,
-#         shuffle=True,
-#         epochs=epochs,
-#         batch_size=batch_size,
-#         validation_data=(x_test, x_test))
-
-# x_test_encoded = encoder.predict(x_test, batch_size=batch_size)
-# plt.figure(figsize=(6, 6))
-# plt.scatter(x_test_encoded[:, 0], x_test_encoded[:, 1], c=y_test)
-# plt.colorbar()
-# plt.show()		 
+vae = Model(x, x_decoded_mean)
+vae.compile(optimizer='adam', loss=vae_loss) # 'rmsprop'
+vae.summary()
 
 	def __init__(self):
 
